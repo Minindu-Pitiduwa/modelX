@@ -104,3 +104,6 @@ Use Python 3.11.14
 Run inside a fresh virtual environment
 
 Ensure the same dataset version is used
+
+IMPORTANT: The .png files and selected_data.csv files are the files generated after the python scripts are run. 
+Re-running the scripts will simply overwrite them.
