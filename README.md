@@ -21,7 +21,8 @@ modelX/
 
 => Setup Instructions
 1. Create and activate the virtual environment
-python3.11 -m venv venv
+python -m venv venv # For windows
+python3 -m venv venv # For Mac
 source venv/bin/activate   # Mac/Linux
 venv\Scripts\activate      # Windows
 
