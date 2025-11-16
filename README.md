@@ -28,8 +28,31 @@ venv\Scripts\activate      # Windows
 2. Install dependencies
 pip install -r requirements.txt
 
-3. Run the main training script
+3. Dataset Download
+
+The main dataset used in this project (dataset.csv, ~500MB) is not included in this repository due to size limitations.
+
+Download it here:
+
+Google Drive Link:
+https://drive.google.com/drive/folders/1D-LYXZ1NSecEvZmLdSM7jLbniCbUJ6PL?usp=drive_link
+
+The file is named Dementia Prediction Dataset.csv make sure to rename it as dataset.csv
+
+After downloading, place the file in the project folder:
+
+modelX/
+│-- training_multiple_models.py
+│-- data_selection.py
+│-- selected_model.py
+│-- dataset.csv
+│-- large_dataset.csv   <-- place it here
+│-- requirements.txt
+│-- README.md
+
+4. Run the main training script
 python training_multiple_models.py
+
 
 => Data
 
