@@ -8,3 +8,6 @@ __pycache__/
 
 # macOS junk
 .DS_Store
+
+# Large dataset (hosted externally)
+dataset.csv
