@@ -39,6 +39,10 @@ https://drive.google.com/drive/folders/1D-LYXZ1NSecEvZmLdSM7jLbniCbUJ6PL?usp=dri
 
 The file is named Dementia Prediction Dataset.csv make sure to rename it as dataset.csv
 
+dataset.csv is only needed if you want to run data_selection.csv
+
+You can run train_multiple_models.py and selected_model.py with the already existing selected_data.csv smaller but cleaned dataset
+
 After downloading, place the file in the project folder:
 
 modelX/
