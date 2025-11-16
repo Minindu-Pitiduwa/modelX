@@ -1,6 +1,3 @@
-# ===========================================================================================
-# --- Importing necessary libraries ---
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,12 +16,9 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from xgboost import XGBClassifier
 import lightgbm as lgb
 
-# ===========================================================================================
-
-
 
 # --- Load Data ---
-file_path = "selected_data_cleaned.csv"
+file_path = "selected_data.csv"
 df = pd.read_csv(file_path)
 df.dropna(inplace=True)
 
@@ -33,11 +27,9 @@ print("STARTING FEATURE ENGINEERING")
 print("="*60)
 print(f"Original number of features: {len(df.columns) - 1}")
 
-# -------------------------------------------------------------
-# FEATURE ENGINEERING
-# -------------------------------------------------------------
+# --- FEATURE ENGINEERING ---
 
-# 1. AGE CALCULATION 
+# 1. AGE CALCULATION
 current_year = 2024
 if 'BIRTHYR' in df.columns:
     df['AGE'] = current_year - df['BIRTHYR']
@@ -52,7 +44,7 @@ if 'BIRTHYR' in df.columns:
     df.drop(columns=[c for c in cols_to_drop if c in df.columns], inplace=True)
     print("✓ Dropped: BIRTHYR, BIRTHMO")
 
-# 2. AGE GROUPS 
+# 2. AGE GROUPS (capture non-linear age effects)
 if 'AGE' in df.columns:
     df['AGE_GROUP_60_70'] = ((df['AGE'] >= 60) & (df['AGE'] < 70)).astype(int)
     df['AGE_GROUP_70_80'] = ((df['AGE'] >= 70) & (df['AGE'] < 80)).astype(int)
@@ -69,7 +61,7 @@ if 'SIBDX' in df.columns and 'KIDSDX' in df.columns:
     df['FAMILY_DEMENTIA_BURDEN'] = df['SIBDX'].fillna(0) + df['KIDSDX'].fillna(0)
     print("✓ Created: FAMILY_DEMENTIA_BURDEN")
 
-# 5. CARDIOVASCULAR RISK SCORE 
+# 5. CARDIOVASCULAR RISK SCORE (vascular dementia pathway)
 cardio_cols = ['HRTATT', 'STROKE', 'TIA', 'HYPERTEN', 'HYPERCHO', 'DIABETES']
 available_cardio = [col for col in cardio_cols if col in df.columns]
 if len(available_cardio) > 0:
@@ -83,7 +75,7 @@ if len(available_neuro) > 0:
     df['NEURO_CONDITION_COUNT'] = df[available_neuro].fillna(0).sum(axis=1)
     print(f"✓ Created: NEURO_CONDITION_COUNT")
 
-# 7. SMOKING INTENSITY 
+# 7. SMOKING INTENSITY (pack-years calculation)
 if 'SMOKYRS' in df.columns and 'PACKS' in df.columns:
     df['PACK_YEARS'] = df['SMOKYRS'].fillna(0) * df['PACKS'].fillna(0)
     print("✓ Created: PACK_YEARS")
@@ -93,7 +85,7 @@ if 'TOBAC100' in df.columns:
     df['EVER_SMOKER'] = (df['TOBAC100'] == 1).astype(int)
     print("✓ Created: EVER_SMOKER")
 
-# 9. COGNITIVE DECLINE INDICATORS 
+# 9. COGNITIVE DECLINE INDICATORS (subjective measures)
 if 'SUBMEM' in df.columns and 'SUBCOG' in df.columns:
     df['SELF_COGNITIVE_CONCERN'] = df['SUBMEM'].fillna(0) + df['SUBCOG'].fillna(0)
     print("✓ Created: SELF_COGNITIVE_CONCERN")
@@ -172,28 +164,25 @@ if 'SEX' in df.columns:
     df['IS_FEMALE'] = (df['SEX'] == 2).astype(int)
     print("✓ Created: IS_FEMALE")
 
-# 21. POLYNOMIAL AGE FEATURES 
+# 21. POLYNOMIAL AGE FEATURES (non-linear effects)
 if 'AGE' in df.columns:
     df['AGE_SQUARED'] = df['AGE'] ** 2
     print("✓ Created: AGE_SQUARED")
 
-# 22. INDEPENDENCE LEVEL 
+# 22. INDEPENDENCE LEVEL (functional status)
 if 'INDEPEND' in df.columns:
     df['FULLY_INDEPENDENT'] = (df['INDEPEND'] == 1).astype(int)
     print("✓ Created: FULLY_INDEPENDENT")
 
-print("\n" + "="*60)
+print("\n" + "-"*60)
 print("FEATURE ENGINEERING COMPLETE")
-print(f"Total features after engineering: {len(df.columns) - 1}")
-print("="*60 + "\n")
-
 
 TARGET = "DEMENTED"
 X = df.drop(columns=[TARGET])
 y = df[TARGET]
 
 
-# --- Train-Test Split ---
+# --- Split ---
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
 )
@@ -207,7 +196,7 @@ models = {
         "XGBoost": XGBClassifier(eval_metric="logloss", use_label_encoder=False)
         }
 
-# --- Hyperparameter Grids ---
+# --- Reduced Hyperparameter Grids (Much Faster) ---
 param_grids = {
     "RandomForest": {
         "n_estimators": [100, 200],
@@ -279,7 +268,7 @@ for name, model in models.items():
 # --- Best Model Summary ---
 print("=====================================")
 print(f"BEST MODEL: {best_model_name} (Accuracy={best_accuracy:.4f})")
-print("=====================================\n")
+print("\n")
 
 y_pred = best_model.predict(X_test)
 print(classification_report(y_test, y_pred))

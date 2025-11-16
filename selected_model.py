@@ -11,29 +11,20 @@ from sklearn.metrics import (
     roc_curve,
     auc,
 )
-
-# --- (EDITED) Only import LightGBM ---
 import lightgbm as lgb
-# (Removed RandomForestClassifier, GradientBoostingClassifier, XGBClassifier)
-
 
 # --- Load Data ---
-file_path = "selected_data_cleaned.csv"
+file_path = "selected_data.csv"
 df = pd.read_csv(file_path)
-# (NEW) Handle missing data. Using dropna(inplace=True) as in your script.
-# This is a very aggressive method and may drop many rows.
 df.dropna(inplace=True) 
 
-print("="*60)
+print("-"*60)
 print("STARTING FEATURE ENGINEERING")
-print("="*60)
 print(f"Original number of features: {len(df.columns) - 1}")
 
-# -------------------------------------------------------------
-# FEATURE ENGINEERING
-# -------------------------------------------------------------
+# --- FEATURE ENGINEERING ---
 
-# 1. AGE CALCULATION (most important demographic feature)
+# 1. AGE CALCULATION
 current_year = 2024
 if 'BIRTHYR' in df.columns:
     df['AGE'] = current_year - df['BIRTHYR']
@@ -44,19 +35,18 @@ if 'BIRTHYR' in df.columns:
     print("✓ Filtered: AGE between 50 and 100")    
 
     # Remove BIRTHYR and BIRTHMO
-    # (Note: Your original code had a space ' BIRTHYR'. Fixed to 'BIRTHYR')
     cols_to_drop = ['BIRTHYR', 'BIRTHMO'] 
     df.drop(columns=[c for c in cols_to_drop if c in df.columns], inplace=True)
     print("✓ Dropped: BIRTHYR, BIRTHMO")
 
-# 2. AGE GROUPS (capture non-linear age effects)
+# 2. AGE GROUPS
 if 'AGE' in df.columns:
     df['AGE_GROUP_60_70'] = ((df['AGE'] >= 60) & (df['AGE'] < 70)).astype(int)
     df['AGE_GROUP_70_80'] = ((df['AGE'] >= 70) & (df['AGE'] < 80)).astype(int)
     df['AGE_GROUP_80_PLUS'] = (df['AGE'] >= 80).astype(int)
     print("✓ Created: AGE_GROUP categories")
 
-# 3. APOE GENETIC RISK (family history - major risk factor)
+# 3. APOE GENETIC RISK
 if 'MOMAPOE' in df.columns and 'DADAPOE' in df.columns:
     df['APOE_FAMILY_RISK'] = df['MOMAPOE'].fillna(0) + df['DADAPOE'].fillna(0)
     print("✓ Created: APOE_FAMILY_RISK")
@@ -66,7 +56,7 @@ if 'SIBDX' in df.columns and 'KIDSDX' in df.columns:
     df['FAMILY_DEMENTIA_BURDEN'] = df['SIBDX'].fillna(0) + df['KIDSDX'].fillna(0)
     print("✓ Created: FAMILY_DEMENTIA_BURDEN")
 
-# 5. CARDIOVASCULAR RISK SCORE (vascular dementia pathway)
+# 5. CARDIOVASCULAR RISK SCORE
 cardio_cols = ['HRTATT', 'STROKE', 'TIA', 'HYPERTEN', 'HYPERCHO', 'DIABETES']
 available_cardio = [col for col in cardio_cols if col in df.columns]
 if len(available_cardio) > 0:
@@ -179,10 +169,9 @@ if 'INDEPEND' in df.columns:
     df['FULLY_INDEPENDENT'] = (df['INDEPEND'] == 1).astype(int)
     print("✓ Created: FULLY_INDEPENDENT")
 
-print("\n" + "="*60)
 print("FEATURE ENGINEERING COMPLETE")
 print(f"Total features after engineering: {len(df.columns) - 1}")
-print("="*60 + "\n")
+print("-"*60 + "\n")
 
 
 TARGET = "DEMENTED"
